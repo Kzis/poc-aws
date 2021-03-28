@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class AmazonClient {
@@ -61,8 +63,27 @@ public class AmazonClient {
     }
 
     private void uploadFileTos3bucket(String fileName, File file) {
-        s3client.putObject(new PutObjectRequest(bucketName, fileName, file)
-                .withCannedAcl(CannedAccessControlList.PublicRead));
+
+        Optional<PutObjectResult> result = Optional.empty();
+
+        try{
+
+            Optional.ofNullable(
+                    s3client.putObject(new PutObjectRequest(bucketName, fileName, file)
+                    .withCannedAcl(CannedAccessControlList.PublicRead))
+            ).ifPresentOrElse(
+                    (value) -> {
+                        System.out.println("Upload Successful URL is : " + endpointUrl + "/" + bucketName + "/" + fileName);
+                        },
+                    () -> {
+                        System.out.println("Upload Unsuccessful");
+                    }
+            );
+
+        }catch (Exception e){
+            System.out.println("Can't upload file to s3 bucket cuz : " + e.getMessage());
+        }
+
     }
 
     private File convertMultiPartToFile(MultipartFile file) throws IOException {
