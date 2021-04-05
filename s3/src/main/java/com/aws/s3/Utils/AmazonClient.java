@@ -63,26 +63,8 @@ public class AmazonClient {
     }
 
     private void uploadFileTos3bucket(String fileName, File file) {
-
-        Optional<PutObjectResult> result = Optional.empty();
-
-        try{
-
-            Optional.ofNullable(
-                    s3client.putObject(new PutObjectRequest(bucketName, fileName, file)
-                    .withCannedAcl(CannedAccessControlList.PublicRead))
-            ).ifPresentOrElse(
-                    (value) -> {
-                        System.out.println("Upload Successful URL is : " + endpointUrl + "/" + bucketName + "/" + fileName);
-                        },
-                    () -> {
-                        System.out.println("Upload Unsuccessful");
-                    }
-            );
-
-        }catch (Exception e){
-            System.out.println("Can't upload file to s3 bucket cuz : " + e.getMessage());
-        }
+        s3client.putObject(new PutObjectRequest(bucketName, fileName, file)
+                .withCannedAcl(CannedAccessControlList.PublicRead));
 
     }
 
